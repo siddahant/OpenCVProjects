@@ -1,5 +1,6 @@
 #include "opencv2\opencv.hpp"
 #include <stdint.h>
+#include <string>
 using namespace cv;
 using namespace std;
 
@@ -22,7 +23,7 @@ void RecenterDFT(Mat& source)
 {
 	int CenterX = source.cols / 2;
 	int CenterY = source.rows / 2;
-
+	
 	Mat q1(source, Rect(0, 0, CenterX, CenterY));
 	Mat q2(source, Rect(CenterX, 0, CenterX, CenterY));
 	Mat q3(source, Rect(0, CenterY, CenterX, CenterY));
@@ -39,9 +40,9 @@ void RecenterDFT(Mat& source)
 
 }
 
-void showDFT(Mat& source)
+void showDFT(Mat& source, string lable)
 {
-	Mat splitArray[2] = { Mat::zeros(source.size(), CV_32F), Mat::zeros(source.size(),CV_32F) };
+	Mat splitArray[2] = {Mat::zeros(source.size(), CV_32F), Mat::zeros(source.size(),CV_32F)};
 
 	split(source, splitArray);
 	Mat DftMagnitude;
@@ -50,9 +51,12 @@ void showDFT(Mat& source)
 	log(DftMagnitude, DftMagnitude);
 	normalize(DftMagnitude, DftMagnitude, 0, 1, CV_MINMAX);
 
+	imshow("DFT of " + lable, DftMagnitude);
+	waitKey();
+
 	RecenterDFT(DftMagnitude);
 
-	imshow("dft", DftMagnitude);
+	imshow("Recneter DFT of " + lable, DftMagnitude);
 	waitKey();
 }
 
@@ -66,26 +70,47 @@ void invertDFT(Mat& source, Mat& Destination)
 
 int main(int argv, char** argc) {
 	Mat Orignal = imread("TEST_IMG.jpeg", CV_LOAD_IMAGE_COLOR);
-
+	
 	Mat SplitChannel[3];
 
 	split(Orignal, SplitChannel);
 
-	Mat ChannelOneFloat;
+	Mat ChannelBlueFloat;
+	Mat ChannelGreenFloat;
+	Mat ChannelRedFloat;
 
-	SplitChannel[0].convertTo(ChannelOneFloat, CV_32FC1, 1.0 / 255.0);
+	SplitChannel[0].convertTo(ChannelBlueFloat, CV_32FC1, 1.0 / 255.0);
+	SplitChannel[1].convertTo(ChannelGreenFloat, CV_32FC1, 1.0 / 255.0);
+	SplitChannel[2].convertTo(ChannelRedFloat, CV_32FC1, 1.0 / 255.0);
 
-	Mat DftOfChannelOne;
+	Mat DftOfChannelBlue;
+	Mat DftOfChannelGreen;
+	Mat DftOfChannelRed;
 
-	takeDFT(ChannelOneFloat, DftOfChannelOne);
+	takeDFT(ChannelBlueFloat, DftOfChannelBlue);
+	takeDFT(ChannelGreenFloat, DftOfChannelGreen);
+	takeDFT(ChannelRedFloat, DftOfChannelRed);
 
-	showDFT(DftOfChannelOne);
+	showDFT(DftOfChannelBlue,"Blue");
+	showDFT(DftOfChannelGreen,"Green");
+	showDFT(DftOfChannelRed,"Red");
+	
+	Mat invertedBlue;
+	Mat invertedGreen;
+	Mat invertedRed;
 
-	Mat inverted;
+	invertDFT(DftOfChannelBlue, invertedBlue);
+	invertDFT(DftOfChannelGreen, invertedGreen);
+	invertDFT(DftOfChannelRed, invertedRed);
 
-	invertDFT(DftOfChannelOne, inverted);
+	imshow("inverted DFT, Blue", invertedBlue);
+	imshow("inverted DFT, Green", invertedGreen);
+	imshow("inverted DFT, Red", invertedRed);
 
-	imshow("inverted DFT", inverted);
+	Mat MergeChannels[3] = { invertedBlue,invertedGreen,invertedRed };
+	Mat InvetedMarged;
+	merge(MergeChannels, 3, InvetedMarged);
+	imshow("Interved Merged", InvetedMarged);
 	waitKey();
-
+	
 }
