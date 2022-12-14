@@ -59,7 +59,7 @@ void cameracalibration(vector<Mat> calibrationImages, Size boardSize, float squa
 
 	vector<vector<Point3f>> worldSpaceCornorPoints(1);
 
-	createKnownBoardPositions(chessboardDimension, squareEdgeLength, worldSpaceCornorPoints[0]);
+	createKnownBoardPositions(boardSize, squareEdgeLength, worldSpaceCornorPoints[0]);
 	worldSpaceCornorPoints.resize(chessboeadImageSpacePoints.size(), worldSpaceCornorPoints[0]);
 
 	vector<Mat> rVector, tVector;
@@ -105,7 +105,7 @@ bool savedCameraCalibration(string name, Mat cameraMatrix, Mat distacneCoefficie
 }
 
 
-const int fps = 200;
+const int fps = 20;
 
 int main(int argv, char** argc) {
 	Mat frame;
@@ -127,7 +127,7 @@ int main(int argv, char** argc) {
 
 	}
 
-	int framePerSecond = 20; 
+	int framePerSecond = 200; 
 	namedWindow("webcam", CV_WINDOW_AUTOSIZE);
 
 	while (true) {
@@ -166,10 +166,10 @@ int main(int argv, char** argc) {
 			{
 				cout << "calibration start" << endl;
 				cameracalibration(savedImages, chessboardDimension, calibrationSquareDimension, cameraMatrix, distanceCoefficents);
+				cout << "done" << endl;
 				savedCameraCalibration("calibration", cameraMatrix, distanceCoefficents);
 			}
 			break;
-			cout << "Done Calibratoin" << endl;
 		case 27: 
 			//exit
 			cout << "Exiting...." << endl;
